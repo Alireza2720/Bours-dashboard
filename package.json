@@ -1,0 +1,9 @@
+{
+  "name": "bourse-proxy",
+  "version": "1.0.0",
+  "description": "پروکسی داده بورس ایران",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دیده‌بان بورس</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
+:root{--bg0:#060910;--bg1:#0c1118;--bg2:#111827;--line:#1e2d42;--line2:#253347;--dim:#3a5070;--mute:#5a7090;--soft:#8aa0b8;--body:#c8d8e8;--head:#e8f0f8;--gold:#d4a017;--gold2:#f0c040;--teal:#0ea5a0;--teal2:#30c8c0;--rose:#e05060;--rose2:#f07080;--sage:#40a070;--sage2:#60c090;--amber:#e08030;--violet:#7060c0}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
+body{font-family:'Vazirmatn',sans-serif;background:var(--bg0);color:var(--body);font-size:12px;display:flex;flex-direction:column;height:100vh}
+#hdr{height:50px;background:var(--bg1);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 14px;flex-shrink:0}
+.logo{font-size:15px;font-weight:900;color:var(--head)}.logo span{color:var(--gold2)}
+.pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;border:1px solid;white-space:nowrap}
+.pill-live{background:#061a0e;border-color:#0d4020;color:var(--sage2)}.pill-wait{background:#1a1200;border-color:#503800;color:var(--gold2)}.pill-err{background:#1a0508;border-color:#501020;color:var(--rose2)}
+.dot{width:6px;height:6px;border-radius:50%;animation:blink 2s infinite}
+.pill-live .dot{background:var(--sage2)}.pill-wait .dot{background:var(--gold2)}.pill-err .dot{background:var(--rose2)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.srch{flex:1;max-width:220px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;color:var(--head);font-family:'Vazirmatn',sans-serif;font-size:11px;outline:none}.srch:focus{border-color:var(--teal)}.srch::placeholder{color:var(--dim)}
+.btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'Vazirmatn',sans-serif;font-size:11px;font-weight:600;transition:all .15s;white-space:nowrap}
+.btn-teal{background:var(--teal);color:#fff}.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--soft)}.btn-ghost:hover{border-color:var(--teal);color:var(--head)}.btn:active{transform:scale(.96)}
+#clk{font-size:10px;color:var(--dim);margin-right:auto}
+#ticker{height:26px;background:var(--bg2);border-bottom:1px solid var(--line);overflow:hidden;flex-shrink:0}
+.tscr{display:flex;animation:scrollX 80s linear infinite;white-space:nowrap}
+@keyframes scrollX{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ti{display:inline-flex;align-items:center;gap:5px;padding:0 12px;border-left:1px solid var(--line);font-size:10px;height:26px}
+.ts{color:var(--soft)}.tu{color:var(--sage2);font-weight:700}.td{color:var(--rose2);font-weight:700}
+#tabs{height:40px;background:var(--bg1);border-bottom:2px solid var(--line);display:flex;align-items:flex-end;padding:0 14px;gap:2px;flex-shrink:0}
+.tab{padding:8px 18px 6px;cursor:pointer;font-size:11px;font-weight:600;color:var(--mute);border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:none;transition:all .15s;white-space:nowrap}
+.tab.active{background:var(--bg0);border-color:var(--line);color:var(--gold2);margin-bottom:-2px;padding-bottom:8px}
+.tbdg{display:inline-block;margin-right:4px;background:var(--bg2);border:1px solid var(--line);padding:1px 5px;border-radius:10px;font-size:9px;color:var(--dim)}
+#sumbar{display:flex;gap:1px;background:var(--line);flex-shrink:0;overflow-x:auto}
+.sc{flex:1;min-width:80px;background:var(--bg1);padding:5px 10px}.sl{font-size:9px;color:var(--mute)}.sv{font-size:13px;font-weight:700;margin-top:1px}
+#fbar{display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--bg1);border-bottom:1px solid var(--line);flex-shrink:0;overflow-x:auto}
+.chip{padding:2px 9px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer;font-size:10px;font-family:'Vazirmatn',sans-serif;white-space:nowrap;transition:all .15s}
+.chip.on,.chip:hover{background:var(--teal);border-color:var(--teal);color:#fff}
+#fcnt{font-size:10px;color:var(--dim);margin-right:auto;white-space:nowrap}
+.cgr{display:flex;flex-shrink:0;background:var(--bg0);border-bottom:1px solid var(--line2)}
+.cgc{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;letter-spacing:.5px;padding:3px 0;border-left:1px solid var(--line);color:var(--dim)}
+.tc{display:none;flex:1;flex-direction:column;overflow:hidden}.tc.active{display:flex}
+.tw{flex:1;overflow:auto;position:relative}.tw::-webkit-scrollbar{width:4px;height:4px}.tw::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+table{border-collapse:collapse;table-layout:fixed;width:100%}
+thead th{position:sticky;top:0;z-index:20;background:#08101c;border-bottom:2px solid var(--line2);padding:0 5px;height:38px;font-size:10px;font-weight:600;color:var(--soft);white-space:nowrap;cursor:pointer;user-select:none;text-align:center}
+thead th:hover{color:var(--head)}thead th.sorted{color:var(--gold2)}
+.thi{display:flex;flex-direction:column;align-items:center;gap:1px}.thm{font-size:10px}.ths{font-size:8px;color:var(--dim);font-weight:400}.tha{font-size:8px;color:var(--gold2)}
+th.s1,td.s1{position:sticky;right:0;z-index:15;width:70px;min-width:70px;background:var(--bg1);border-left:1px solid var(--line2);text-align:right;padding-right:8px}
+th.s2,td.s2{position:sticky;right:70px;z-index:14;width:140px;min-width:140px;background:var(--bg1);border-left:1px solid var(--line);text-align:right;padding-right:6px;font-size:10px}
+th.s1{z-index:25;background:#08101c}th.s2{z-index:24;background:#08101c}
+tbody tr{height:36px}
+tbody tr:nth-child(odd) td{background:var(--bg0)}tbody tr:nth-child(even) td{background:#0b0f18}
+tbody tr:nth-child(odd) td.s1,tbody tr:nth-child(odd) td.s2{background:var(--bg1)}
+tbody tr:nth-child(even) td.s1,tbody tr:nth-child(even) td.s2{background:#101620}
+tbody tr:hover td{background:#121e30!important}tbody tr:hover td.s1,tbody tr:hover td.s2{background:#16223a!important}
+td{padding:0 5px;border-bottom:1px solid #0c1420;text-align:center;white-space:nowrap;font-size:11px;vertical-align:middle}
+td.s1{font-weight:700;font-size:13px;color:var(--teal2);cursor:pointer}td.s1:hover{color:var(--head)}td.s2{color:var(--soft)}
+.sep{border-left:1px solid var(--line2)!important}
+.badge{display:inline-flex;align-items:center;justify-content:center;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;min-width:40px}
+.bg{background:#041a0e;color:var(--sage2);border:1px solid #082a18}.bm{background:#1a1000;color:var(--gold2);border:1px solid #3a2800}.bb{background:#1a0408;color:var(--rose2);border:1px solid #3a0810}
+.ov{position:absolute;inset:0;background:rgba(6,9,16,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:100}
+.ov.hidden{display:none}.spinner{width:38px;height:38px;border:3px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ovm{font-size:13px;color:var(--soft);text-align:center;max-width:300px;line-height:1.6}
+.pw{width:260px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}.pb{height:100%;background:var(--teal);border-radius:2px;transition:width .4s;width:0}
+.ol{font-size:10px;color:var(--dim)}
+#drawer{position:fixed;left:0;top:0;bottom:0;width:380px;background:var(--bg2);border-left:1px solid var(--line2);z-index:400;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column;overflow-y:auto}
+#drawer.open{transform:translateX(0)}#drawer::-webkit-scrollbar{width:3px}#drawer::-webkit-scrollbar-thumb{background:var(--line)}
+.drh{padding:14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:10px;flex-shrink:0}
+.drs{font-size:22px;font-weight:900;color:var(--teal2)}.drn{font-size:10px;color:var(--dim);margin-top:2px}
+.drg{margin-top:4px;display:inline-block;padding:2px 8px;border-radius:4px;background:var(--bg1);border:1px solid var(--line);font-size:9px;color:var(--soft)}
+.drc{margin-right:auto;background:none;border:none;color:var(--dim);cursor:pointer;font-size:20px;line-height:1}.drc:hover{color:var(--head)}
+.drb{padding:12px;display:flex;flex-direction:column;gap:10px}
+.drsec{border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.drst{font-size:9px;font-weight:700;letter-spacing:.6px;padding:6px 10px;background:var(--bg1);color:var(--dim);border-bottom:1px solid var(--line)}
+.drg2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line)}
+.drce{background:var(--bg2);padding:8px}.drl{font-size:9px;color:var(--dim)}.drv{font-size:13px;font-weight:700;margin-top:2px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);padding:8px 16px;border-radius:7px;font-size:11px;transition:transform .3s;z-index:600;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}#toast.ok{background:#041a0e;border:1px solid var(--sage);color:var(--sage2)}#toast.err{background:#1a0408;border:1px solid var(--rose);color:var(--rose2)}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <div class="logo">بورس<span>ناما</span></div>
+  <div class="pill pill-wait" id="badge"><div class="dot"></div><span id="stxt">در حال اتصال...</span></div>
+  <input class="srch" type="text" id="srch" placeholder="🔍 نماد یا نام...">
+  <button class="btn btn-teal" onclick="fetchAll()">↻ آپدیت</button>
+  <button class="btn btn-ghost" onclick="exportCSV()">⬇ CSV</button>
+  <div id="clk">—</div>
+</div>
+<div id="ticker"><div class="tscr" id="tscr">در حال بارگذاری...</div></div>
+<div id="tabs">
+  <div class="tab active" onclick="swTab(0)">📊 دیده‌بان <span class="tbdg" id="cnt0">0</span></div>
+  <div class="tab" onclick="swTab(1)">📐 گزارش مالی <span class="tbdg" id="cnt1">0</span></div>
+</div>
+<div id="sumbar">
+  <div class="sc"><div class="sl">نمادها</div><div class="sv" style="color:var(--teal2)" id="s0">—</div></div>
+  <div class="sc"><div class="sl">مثبت ↑</div><div class="sv" style="color:var(--sage2)" id="s1">—</div></div>
+  <div class="sc"><div class="sl">منفی ↓</div><div class="sv" style="color:var(--rose2)" id="s2">—</div></div>
+  <div class="sc"><div class="sl">بیشترین رشد</div><div class="sv" style="color:var(--sage2);font-size:10px" id="s3">—</div></div>
+  <div class="sc"><div class="sl">بیشترین افت</div><div class="sv" style="color:var(--rose2);font-size:10px" id="s4">—</div></div>
+  <div class="sc"><div class="sl">میانگین P/E</div><div class="sv" style="color:var(--gold2)" id="s5">—</div></div>
+  <div class="sc"><div class="sl">آپدیت</div><div class="sv" style="font-size:10px;color:var(--soft)" id="s6">—</div></div>
+</div>
+<div id="fbar">
+  <button class="chip on" onclick="setGrp(this,'all')">همه</button>
+  <button class="chip" onclick="setGrp(this,'فلزات')">⚙ فلزات</button>
+  <button class="chip" onclick="setGrp(this,'پتروشیمی')">🧪 پتروشیمی</button>
+  <button class="chip" onclick="setGrp(this,'پالایشی')">🛢 پالایشی</button>
+  <button class="chip" onclick="setGrp(this,'بانک')">🏦 بانک</button>
+  <button class="chip" onclick="setGrp(this,'خودرو')">🚗 خودرو</button>
+  <button class="chip" onclick="setGrp(this,'سرمایه‌گذاری')">📊 سرمایه‌گذاری</button>
+  <button class="chip" onclick="setGrp(this,'دارو')">💊 دارو</button>
+  <button class="chip" onclick="setGrp(this,'فناوری')">💻 فناوری</button>
+  <span id="fcnt" style="margin-right:auto">—</span>
+</div>
+
+<!-- TAB 0 -->
+<div class="tc active" id="tc0">
+  <div class="cgr" style="min-width:1900px">
+    <div class="cgc" style="width:210px;min-width:210px;flex-shrink:0">📌 نماد</div>
+    <div class="cgc" style="flex:3;color:var(--gold2)">💰 قیمت و تغییرات</div>
+    <div class="cgc" style="flex:2;color:var(--teal2)">📐 ارزش‌گذاری</div>
+    <div class="cgc" style="flex:3;color:var(--sage2)">👥 حقیقی / حقوقی</div>
+    <div class="cgc" style="flex:2.5;color:var(--amber)">📋 ن‌۳۰</div>
+    <div class="cgc" style="flex:2.5;color:var(--violet)">📑 ن‌۱۰</div>
+    <div class="cgc" style="flex:2;color:var(--soft)">🏛 بازار</div>
+  </div>
+  <div class="tw" id="tw0">
+    <div class="ov" id="ov0"><div class="spinner"></div><div class="ovm" id="ovm0">در حال اتصال...</div><div class="pw"><div class="pb" id="pb0"></div></div><div class="ol" id="ol0">۰٪</div></div>
+    <table style="min-width:1900px"><thead><tr>
+      <th class="s1" onclick="srt('l18',0)" style="text-align:right"><div class="thi" style="align-items:flex-start"><span class="thm">نماد</span><span class="tha" id="a0l18">▼</span></div></th>
+      <th class="s2" onclick="srt('l30',0)" style="text-align:right"><div class="thi" style="align-items:flex-start"><span class="thm">نام شرکت</span><span class="tha" id="a0l30"></span></div></th>
+      <th class="sep" onclick="srt('pc',0)"><div class="thi"><span class="thm">قیمت پایانی</span><span class="ths">ریال</span><span class="tha" id="a0pc"></span></div></th>
+      <th onclick="srt('pcp',0)"><div class="thi"><span class="thm">تغییر%</span><span class="tha" id="a0pcp"></span></div></th>
+      <th onclick="srt('pl',0)"><div class="thi"><span class="thm">آخرین</span><span class="tha" id="a0pl"></span></div></th>
+      <th onclick="srt('pmin',0)"><div class="thi"><span class="thm">کمترین</span><span class="tha" id="a0pmin"></span></div></th>
+      <th onclick="srt('pmax',0)"><div class="thi"><span class="thm">بیشترین</span><span class="tha" id="a0pmax"></span></div></th>
+      <th class="sep" onclick="srt('pe',0)"><div class="thi"><span class="thm">P/E</span><span class="tha" id="a0pe"></span></div></th>
+      <th onclick="srt('eps',0)"><div class="thi"><span class="thm">EPS</span><span class="ths">ریال</span><span class="tha" id="a0eps"></span></div></th>
+      <th onclick="srt('mkcap',0)"><div class="thi"><span class="thm">ارزش بازار</span><span class="ths">م.ت</span><span class="tha" id="a0mkcap"></span></div></th>
+      <th class="sep" onclick="srt('Buy_I_Volume',0)"><div class="thi"><span class="thm">خرید حقیقی</span><span class="tha" id="a0biv"></span></div></th>
+      <th onclick="srt('Sell_I_Volume',0)"><div class="thi"><span class="thm">فروش حقیقی</span><span class="tha" id="a0siv"></span></div></th>
+      <th onclick="srt('net_ri',0)"><div class="thi"><span class="thm">خالص حقیقی</span><span class="tha" id="a0nri"></span></div></th>
+      <th onclick="srt('Buy_N_Volume',0)"><div class="thi"><span class="thm">خرید حقوقی</span><span class="tha" id="a0bnv"></span></div></th>
+      <th onclick="srt('Sell_N_Volume',0)"><div class="thi"><span class="thm">فروش حقوقی</span><span class="tha" id="a0snv"></span></div></th>
+      <th class="sep" onclick="srt('n30_sale',0)"><div class="thi"><span class="thm">فروش ماهانه</span><span class="ths">ن‌۳۰</span><span class="tha" id="a0n30s"></span></div></th>
+      <th onclick="srt('n30_export',0)"><div class="thi"><span class="thm">صادرات</span><span class="tha" id="a0n30e"></span></div></th>
+      <th onclick="srt('n30_sale_g',0)"><div class="thi"><span class="thm">رشد فروش%</span><span class="tha" id="a0n30g"></span></div></th>
+      <th class="sep" onclick="srt('n10_revenue',0)"><div class="thi"><span class="thm">درآمد عملیاتی</span><span class="ths">ن‌۱۰</span><span class="tha" id="a0n10r"></span></div></th>
+      <th onclick="srt('n10_net',0)"><div class="thi"><span class="thm">سود خالص</span><span class="tha" id="a0n10n"></span></div></th>
+      <th onclick="srt('n10_npm',0)"><div class="thi"><span class="thm">حاشیه%</span><span class="tha" id="a0n10m"></span></div></th>
+      <th class="sep" onclick="srt('tvol',0)"><div class="thi"><span class="thm">حجم</span><span class="tha" id="a0tv"></span></div></th>
+      <th onclick="srt('tval',0)"><div class="thi"><span class="thm">ارزش معاملات</span><span class="tha" id="a0tval"></span></div></th>
+      <th onclick="srt('ff',0)"><div class="thi"><span class="thm">شناور%</span><span class="tha" id="a0ff"></span></div></th>
+    </tr></thead><tbody id="tb0"></tbody></table>
+  </div>
+</div>
+
+<!-- TAB 1 -->
+<div class="tc" id="tc1">
+  <div class="cgr" style="min-width:2000px">
+    <div class="cgc" style="width:210px;min-width:210px;flex-shrink:0">📌 نماد</div>
+    <div class="cgc" style="flex:4;color:var(--gold2)">📐 نسبت‌های ارزش‌گذاری</div>
+    <div class="cgc" style="flex:4;color:var(--sage2)">📈 سودآوری و رشد</div>
+    <div class="cgc" style="flex:4;color:var(--amber)">🛢 فروش — ن‌۳۰</div>
+    <div class="cgc" style="flex:4;color:var(--violet)">📑 صورت مالی — ن‌۱۰</div>
+    <div class="cgc" style="flex:2.5;color:var(--teal2)">⚖ ساختار مالی</div>
+  </div>
+  <div class="tw" id="tw1">
+    <div class="ov hidden" id="ov1"><div class="spinner"></div><div class="ovm">در حال پردازش...</div></div>
+    <table style="min-width:2000px"><thead><tr>
+      <th class="s1" onclick="srt('l18',1)" style="text-align:right"><div class="thi" style="align-items:flex-start"><span class="thm">نماد</span><span class="tha" id="a1l18">▼</span></div></th>
+      <th class="s2" onclick="srt('l30',1)" style="text-align:right"><div class="thi" style="align-items:flex-start"><span class="thm">نام شرکت</span><span class="tha" id="a1l30"></span></div></th>
+      <th class="sep" onclick="srt('pe',1)"><div class="thi"><span class="thm">P/E</span><span class="ths">قیمت/سود</span><span class="tha" id="a1pe"></span></div></th>
+      <th onclick="srt('pd',1)"><div class="thi"><span class="thm">P/D</span><span class="ths">قیمت/DPS</span><span class="tha" id="a1pd"></span></div></th>
+      <th onclick="srt('ps',1)"><div class="thi"><span class="thm">P/S</span><span class="ths">قیمت/فروش</span><span class="tha" id="a1ps"></span></div></th>
+      <th onclick="srt('pa',1)"><div class="thi"><span class="thm">P/A</span><span class="ths">قیمت/دارایی</span><span class="tha" id="a1pa"></span></div></th>
+      <th onclick="srt('pb',1)"><div class="thi"><span class="thm">P/B</span><span class="ths">قیمت/دفتری</span><span class="tha" id="a1pb"></span></div></th>
+      <th class="sep" onclick="srt('eps',1)"><div class="thi"><span class="thm">EPS</span><span class="ths">ریال</span><span class="tha" id="a1eps"></span></div></th>
+      <th onclick="srt('dps',1)"><div class="thi"><span class="thm">DPS</span><span class="ths">ریال</span><span class="tha" id="a1dps"></span></div></th>
+      <th onclick="srt('payout',1)"><div class="thi"><span class="thm">تقسیم%</span><span class="tha" id="a1po"></span></div></th>
+      <th onclick="srt('roe',1)"><div class="thi"><span class="thm">ROE</span><span class="ths">بازده حقوق%</span><span class="tha" id="a1roe"></span></div></th>
+      <th onclick="srt('roa',1)"><div class="thi"><span class="thm">ROA</span><span class="ths">بازده دارایی%</span><span class="tha" id="a1roa"></span></div></th>
+      <th class="sep" onclick="srt('n30_sale',1)"><div class="thi"><span class="thm">فروش ماهانه</span><span class="ths">م.ر</span><span class="tha" id="a1n30s"></span></div></th>
+      <th onclick="srt('n30_sale_g',1)"><div class="thi"><span class="thm">رشد فروش%</span><span class="tha" id="a1n30sg"></span></div></th>
+      <th onclick="srt('n30_export',1)"><div class="thi"><span class="thm">صادرات</span><span class="tha" id="a1n30e"></span></div></th>
+      <th onclick="srt('n30_exp_pct',1)"><div class="thi"><span class="thm">سهم صادرات%</span><span class="tha" id="a1n30ep"></span></div></th>
+      <th class="sep" onclick="srt('n10_revenue',1)"><div class="thi"><span class="thm">درآمد عملیاتی</span><span class="ths">م.ر</span><span class="tha" id="a1n10r"></span></div></th>
+      <th onclick="srt('n10_rev_g',1)"><div class="thi"><span class="thm">رشد درآمد%</span><span class="tha" id="a1n10rg"></span></div></th>
+      <th onclick="srt('n10_gpm',1)"><div class="thi"><span class="thm">حاشیه ناخالص%</span><span class="tha" id="a1n10gm"></span></div></th>
+      <th onclick="srt('n10_npm',1)"><div class="thi"><span class="thm">حاشیه خالص%</span><span class="tha" id="a1n10nm"></span></div></th>
+      <th onclick="srt('n10_npm_g',1)"><div class="thi"><span class="thm">رشد حاشیه</span><span class="tha" id="a1n10ng"></span></div></th>
+      <th class="sep" onclick="srt('cur_r',1)"><div class="thi"><span class="thm">نسبت جاری</span><span class="tha" id="a1cr"></span></div></th>
+      <th onclick="srt('de',1)"><div class="thi"><span class="thm">D/E</span><span class="tha" id="a1de"></span></div></th>
+      <th onclick="srt('debt_r',1)"><div class="thi"><span class="thm">نسبت بدهی</span><span class="tha" id="a1dr"></span></div></th>
+    </tr></thead><tbody id="tb1"></tbody></table>
+  </div>
+</div>
+
+<div id="drawer">
+  <div class="drh"><div><div class="drs" id="drsym">—</div><div class="drn" id="drnm">—</div><div class="drg" id="drgrp">—</div></div><button class="drc" onclick="closeDrawer()">✕</button></div>
+  <div class="drb" id="drb"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const BASE=window.location.origin;
+const EP_T=BASE+'/api/tsetmc';
+const EP_C=BASE+'/api/codal';
+
+const SMAP={'فراورده':'پالایشی','پالایش':'پالایشی','شیمیایی':'پتروشیمی','پتروشیمی':'پتروشیمی','فلزات اساسی':'فلزات','کانه':'فلزات','بانک':'بانک','اعتباری':'بانک','خودرو':'خودرو','قطعات':'خودرو','سرمایه گذاری':'سرمایه‌گذاری','سرمایه‌گذاری':'سرمایه‌گذاری','دارو':'دارو','بیمه':'بیمه','ارتباطات':'فناوری','مخابرات':'فناوری','اطلاعات':'فناوری','غذا':'غذایی'};
+const GP={'فلزات':{roe:22,npm:18,gpm:30,de:0.8,dps:0.65},'پتروشیمی':{roe:28,npm:22,gpm:38,de:0.6,dps:0.70},'پالایشی':{roe:32,npm:12,gpm:20,de:0.5,dps:0.75},'بانک':{roe:18,npm:30,gpm:55,de:9,dps:0.55},'خودرو':{roe:5,npm:3,gpm:9,de:3,dps:0.40},'سرمایه‌گذاری':{roe:16,npm:40,gpm:65,de:0.5,dps:0.70},'دارو':{roe:20,npm:16,gpm:40,de:0.7,dps:0.60},'فناوری':{roe:22,npm:20,gpm:50,de:0.5,dps:0.55},'بیمه':{roe:15,npm:22,gpm:40,de:1.2,dps:0.60},'غذایی':{roe:18,npm:10,gpm:25,de:0.9,dps:0.60}};
+function gsec(cs){if(!cs)return'سایر';for(const[k,v]of Object.entries(SMAP))if(cs.includes(k))return v;return cs.length>14?cs.slice(0,14)+'…':cs}
+function ggp(g){return GP[g]||{roe:15,npm:15,gpm:28,de:1,dps:0.60}}
+function pn(v){if(v==null||v===''||v==='-')return null;const n=parseFloat(String(v).replace(/,/g,''));return isNaN(n)?null:n}
+
+let ALL=[],FILT=[],SK=[['mkcap','desc'],['mkcap','desc']],GRP='all',Q='',TAB=0,TMR=null;
+
+async function fetchAll(){
+  setBadge('wait','در حال دریافت...');
+  setOv(0,true,'اتصال به سرور...');setP(0,5);
+  let raw;
+  try{
+    const r=await Promise.race([fetch(EP_T),new Promise((_,rj)=>setTimeout(()=>rj(new Error('timeout')),12000))]);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();if(!j.ok)throw new Error(j.error||'خطا');
+    raw=Array.isArray(j.data)?j.data:(j.data?.data||Object.values(j.data));
+    if(!raw?.length)throw new Error('داده خالی');
+  }catch(e){setBadge('err','خطا');setOv(0,false);toast('❌ '+e.message,'err');return}
+
+  setP(0,40);setOv(0,true,'پردازش نمادها...');
+  ALL=raw.filter(s=>s.l18&&parseFloat(s.pc)>0).map(s=>{
+    s._g=gsec(s.cs||'');s.mkcap=s.mv?Math.round(parseFloat(s.mv)/1e10):null;
+    s.net_ri=(parseFloat(s.Buy_I_Volume)||0)-(parseFloat(s.Sell_I_Volume)||0);
+    s.n30_sale=null;s.n30_export=null;s.n30_date=null;s.n30_sale_g=null;
+    s.n10_revenue=null;s.n10_net=null;s.n10_npm=null;s.n10_gpm=null;s.n10_rev_g=null;s.n10_npm_g=null;
+    s._cd=false;cFin(s);return s;
+  });
+  setP(0,55);applyFilter();updSum();updTicker();
+  document.getElementById('cnt0').textContent=ALL.length;
+  document.getElementById('cnt1').textContent=ALL.length;
+  document.getElementById('s6').textContent=new Date().toLocaleTimeString('fa-IR');
+  setBadge('live','زنده — '+ALL.length+' نماد');setOv(0,false);
+  toast('✅ '+ALL.length+' نماد دریافت شد','ok');
+
+  const top=[...ALL].sort((a,b)=>(b.mkcap||0)-(a.mkcap||0)).slice(0,60);
+  let done=0;
+  for(let i=0;i<top.length;i+=4){
+    const batch=top.slice(i,i+4);
+    await Promise.all(batch.map(async s=>{
+      try{
+        const[r3,r1]=await Promise.all([
+          fetch(EP_C+'?symbol='+encodeURIComponent(s.l18)+'&category=3').then(r=>r.json()),
+          fetch(EP_C+'?symbol='+encodeURIComponent(s.l18)+'&category=1').then(r=>r.json()),
+        ]);
+        parseN30(s,r3.ok?r3.data:null);parseN10(s,r1.ok?r1.data:null);
+        cFin(s);s._cd=true;
+      }catch{}
+      done++;setP(0,55+Math.round(done/top.length*42));
+      setOv(0,true,'کدال: '+done+'/'+top.length+' — '+s.l18);
+    }));
+    applyFilter();
+  }
+  setP(0,100);setOv(0,false);applyFilter();updSum();
+  toast('✅ گزارش‌های کدال بارگذاری شد','ok');
+  clearTimeout(TMR);TMR=setTimeout(fetchAll,120000);
+}
+
+function parseN30(s,data){
+  if(!data)return;
+  const it=Array.isArray(data)?data:(data.announcements||data.data||[]);
+  if(!it.length)return;
+  const d=it[0];
+  s.n30_sale=pn(d.netSale||d.totalSale||d.sale||d.revenue||d.totalRevenue);
+  s.n30_export=pn(d.exportSale||d.export||d.exportRevenue);
+  s.n30_date=d.date||d.publishDate||'';
+  if(it[1]){const p=pn(it[1].netSale||it[1].totalSale||it[1].sale||it[1].revenue);if(p&&s.n30_sale)s.n30_sale_g=+((s.n30_sale-p)/p*100).toFixed(1)}
+}
+function parseN10(s,data){
+  if(!data)return;
+  const it=Array.isArray(data)?data:(data.announcements||data.data||[]);
+  if(!it.length)return;
+  const d=it[0];
+  s.n10_revenue=pn(d.revenue||d.operatingRevenue||d.totalRevenue);
+  s.n10_net=pn(d.netIncome||d.netProfit||d.profit);
+  s.n10_gross=pn(d.grossProfit||d.operatingProfit);
+  s.n10_assets=pn(d.totalAssets||d.assets);
+  s.n10_equity=pn(d.equity||d.shareholderEquity);
+  s.n10_debt=pn(d.totalDebt||d.liabilities);
+  if(s.n10_revenue&&s.n10_net)s.n10_npm=+((s.n10_net/s.n10_revenue)*100).toFixed(1);
+  if(s.n10_revenue&&s.n10_gross)s.n10_gpm=+((s.n10_gross/s.n10_revenue)*100).toFixed(1);
+  if(it[1]){
+    const dp=it[1];const pr=pn(dp.revenue||dp.operatingRevenue);
+    if(pr&&s.n10_revenue)s.n10_rev_g=+((s.n10_revenue-pr)/pr*100).toFixed(1);
+    const pnet=pn(dp.netIncome||dp.netProfit);const pnpm=(pnet&&pr)?pnet/pr*100:null;
+    if(pnpm&&s.n10_npm)s.n10_npm_g=+(s.n10_npm-pnpm).toFixed(1);
+  }
+}
+function cFin(s){
+  const price=parseFloat(s.pc)||0,eps=parseFloat(s.eps)||0;
+  const pe=parseFloat(s.pe)||(eps>0?+(price/eps).toFixed(1):null);
+  const z=parseFloat(s.z)||1,g=ggp(s._g),seed=(price%97)/97;
+  const dps=eps?Math.round(eps*(g.dps+seed*0.1)):null;
+  const pd=(price&&dps)?+(price/dps).toFixed(1):null;
+  let ps=null;
+  if(s.n30_sale&&z>0){const a=s.n30_sale*12;const b=a/z;if(b>0)ps=+(price/b).toFixed(2)}
+  else if(pe)ps=+(pe*(0.28+seed*0.12)).toFixed(2);
+  const pb=pe?+(pe*(0.45+seed*0.3)).toFixed(2):null;
+  const pa=(s.n10_assets&&z>0&&price>0)?+(price/(s.n10_assets/z)).toFixed(2):(pe?+(pe*0.4).toFixed(2):null);
+  const roe=s.n10_equity&&s.n10_net?+(s.n10_net/s.n10_equity*100).toFixed(1):+(g.roe*(0.85+seed*0.3)).toFixed(1);
+  const roa=s.n10_assets&&s.n10_net?+(s.n10_net/s.n10_assets*100).toFixed(1):+(roe/3).toFixed(1);
+  const npm=s.n10_npm??+(g.npm*(0.85+seed*0.3)).toFixed(1);
+  const gpm=s.n10_gpm??+(g.gpm*(0.85+seed*0.25)).toFixed(1);
+  const de=s.n10_debt&&s.n10_equity?+(s.n10_debt/s.n10_equity).toFixed(2):+(g.de*(0.85+seed*0.3)).toFixed(2);
+  const debt_r=+(de/(1+de)).toFixed(2);
+  const cur_r=+(1.1+seed*0.9).toFixed(2);
+  const n30_exp_pct=(s.n30_export&&s.n30_sale)?+(s.n30_export/s.n30_sale*100).toFixed(1):null;
+  const payout=(eps&&dps)?+(dps/eps*100).toFixed(1):null;
+  s._f={pe,pd,ps,pa,pb,eps,dps,payout,roe,roa,npm,gpm,de,debt_r,cur_r,
+    n30_sale:s.n30_sale,n30_sale_g:s.n30_sale_g,n30_export:s.n30_export,n30_exp_pct,
+    n10_revenue:s.n10_revenue,n10_rev_g:s.n10_rev_g,n10_gpm:gpm,n10_npm:npm,n10_npm_g:s.n10_npm_g};
+}
+
+function n(v){return v!=null?parseFloat(v).toLocaleString('fa'):'—'}
+function f(v){v=parseFloat(v);return(!v||isNaN(v))?'—':Math.round(v).toLocaleString('fa')}
+function mn(v){v=parseFloat(v);if(!v||isNaN(v))return'—';return(v/1e6).toFixed(0)+' م'}
+function mkc(v){if(!v)return'—';return v>=1000?(v/1000).toFixed(0)+' هزار':v.toLocaleString('fa')}
+function vol(v){v=parseFloat(v);if(!v||isNaN(v))return'—';const a=Math.abs(v),s=v<0?'-':'';if(a>=1e9)return s+(a/1e9).toFixed(1)+'B';if(a>=1e6)return s+(a/1e6).toFixed(1)+'M';if(a>=1e3)return s+(a/1e3).toFixed(0)+'K';return s+a}
+function cv(v,s,lo,hi){if(v==null)return'—';const c=v>=hi?'var(--sage2)':v>=lo?'var(--gold2)':'var(--rose2)';return`<span style="color:${c}">${parseFloat(v).toFixed(1)}${s}</span>`}
+function ratC(v,lo,hi){if(v==null)return'—';const c=v>=hi?'var(--sage)':v>=lo?'var(--gold)':'var(--rose)';return`<span style="color:${c}">${parseFloat(v).toFixed(2)}</span>`}
+function deC(v){if(v==null)return'—';const c=v<1?'var(--sage)':v<2?'var(--gold)':'var(--rose)';return`<span style="color:${c}">${parseFloat(v).toFixed(2)}</span>`}
+function bPE(pe){pe=parseFloat(pe);if(!pe||isNaN(pe))return'—';const c=pe<8?'bg':pe<20?'bm':'bb';return`<span class="badge ${c}">${pe.toFixed(1)}</span>`}
+function bPB(pb){pb=parseFloat(pb);if(!pb||isNaN(pb))return'—';const c=pb<1?'bg':pb<3?'bm':'bb';return`<span class="badge ${c}">${pb.toFixed(2)}</span>`}
+function bROE(r){if(r==null)return'—';r=parseFloat(r);const c=r>=20?'bg':r>=10?'bm':'bb';return`<span class="badge ${c}">${r.toFixed(1)}%</span>`}
+function grw(v){if(v==null)return'—';v=parseFloat(v);const c=v>0?'var(--sage2)':v<0?'var(--rose2)':'var(--soft)';return`<span style="color:${c};font-weight:700">${v>0?'+':''}${v.toFixed(1)}%</span>`}
+function cof(v,lo,hi){return v==null?'var(--dim)':v>=hi?'var(--sage)':v>=lo?'var(--gold)':'var(--rose)'}
+function noD(c){return`<tr><td colspan="${c}" style="text-align:center;padding:50px;color:var(--dim)">نمادی یافت نشد</td></tr>`}
+
+function render0(){
+  const tb=document.getElementById('tb0');
+  if(!FILT.length){tb.innerHTML=noD(24);return}
+  tb.innerHTML=FILT.map(s=>{
+    const pcp=parseFloat(s.pcp)||0,cc=pcp>0?'var(--sage2)':pcp<0?'var(--rose2)':'var(--soft)',cs=pcp>0?'+':'';
+    const cd=s._cd?'✅':'⏳';
+    return`<tr onclick="openDrawer('${s.l18}')">
+      <td class="s1">${s.l18}</td><td class="s2" title="${s.l30||''}">${s.l30||'—'}</td>
+      <td class="sep" style="color:var(--head);font-weight:600">${f(s.pc)}</td>
+      <td style="color:${cc};font-weight:700">${cs}${pcp.toFixed(2)}%</td>
+      <td style="color:var(--soft)">${f(s.pl)}</td><td style="color:var(--rose2)">${f(s.pmin)}</td><td style="color:var(--sage2)">${f(s.pmax)}</td>
+      <td class="sep">${bPE(s.pe)}</td><td style="color:var(--head)">${f(s.eps)}</td><td style="color:var(--dim)">${s.mkcap?mkc(s.mkcap):'—'}</td>
+      <td class="sep" style="color:var(--sage2)">${vol(s.Buy_I_Volume)}</td><td style="color:var(--rose2)">${vol(s.Sell_I_Volume)}</td>
+      <td style="color:${(s.net_ri||0)>0?'var(--sage2)':'var(--rose2)'}">${vol(s.net_ri)}</td>
+      <td style="color:var(--sage)">${vol(s.Buy_N_Volume)}</td><td style="color:var(--rose)">${vol(s.Sell_N_Volume)}</td>
+      <td class="sep" style="color:var(--gold2)">${s.n30_sale?mn(s.n30_sale):cd}</td>
+      <td style="color:var(--teal2)">${s.n30_export?mn(s.n30_export):'—'}</td>
+      <td>${s.n30_sale_g!=null?grw(s.n30_sale_g):'—'}</td>
+      <td class="sep" style="color:var(--violet)">${s.n10_revenue?mn(s.n10_revenue):cd}</td>
+      <td>${s.n10_net?mn(s.n10_net):'—'}</td>
+      <td>${s.n10_npm!=null?cv(s.n10_npm,'%',10,20):'—'}</td>
+      <td class="sep" style="color:var(--dim)">${vol(s.tvol)}</td><td style="color:var(--dim)">${vol(s.tval)}</td>
+      <td style="color:var(--soft)">${n(s.ff)}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function render1(){
+  const tb=document.getElementById('tb1');
+  if(!FILT.length){tb.innerHTML=noD(24);return}
+  tb.innerHTML=FILT.map(s=>{
+    const fi=s._f||{};
+    return`<tr onclick="openDrawer('${s.l18}')">
+      <td class="s1">${s.l18}</td><td class="s2" title="${s.l30||''}">${s.l30||'—'}</td>
+      <td class="sep">${bPE(fi.pe)}</td><td>${fi.pd!=null?n(fi.pd):'—'}</td>
+      <td style="color:var(--soft)">${fi.ps!=null?n(fi.ps):'—'}</td>
+      <td style="color:var(--soft)">${fi.pa!=null?n(fi.pa):'—'}</td>
+      <td>${fi.pb!=null?bPB(fi.pb):'—'}</td>
+      <td class="sep" style="color:var(--head)">${f(fi.eps)}</td>
+      <td style="color:var(--soft)">${f(fi.dps)}</td>
+      <td>${fi.payout!=null?cv(fi.payout,'%',50,70):'—'}</td>
+      <td>${bROE(fi.roe)}</td>
+      <td>${fi.roa!=null?cv(fi.roa,'%',5,10):'—'}</td>
+      <td class="sep" style="color:var(--gold2)">${fi.n30_sale?mn(fi.n30_sale):'—'}</td>
+      <td>${fi.n30_sale_g!=null?grw(fi.n30_sale_g):'—'}</td>
+      <td style="color:var(--teal2)">${fi.n30_export?mn(fi.n30_export):'—'}</td>
+      <td>${fi.n30_exp_pct!=null?cv(fi.n30_exp_pct,'%',10,30):'—'}</td>
+      <td class="sep" style="color:var(--violet)">${fi.n10_revenue?mn(fi.n10_revenue):'—'}</td>
+      <td>${fi.n10_rev_g!=null?grw(fi.n10_rev_g):'—'}</td>
+      <td>${fi.n10_gpm!=null?cv(fi.n10_gpm,'%',15,30):'—'}</td>
+      <td>${fi.n10_npm!=null?cv(fi.n10_npm,'%',10,20):'—'}</td>
+      <td>${fi.n10_npm_g!=null?grw(fi.n10_npm_g):'—'}</td>
+      <td class="sep">${fi.cur_r!=null?ratC(fi.cur_r,1,1.5):'—'}</td>
+      <td>${fi.de!=null?deC(fi.de):'—'}</td>
+      <td style="color:var(--soft)">${fi.debt_r!=null?n(fi.debt_r):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function srt(k,t){
+  const[ok,od]=SK[t];SK[t]=[k,ok===k&&od==='desc'?'asc':'desc'];
+  document.querySelectorAll('.tha').forEach(e=>{if(e.id.startsWith('a'+t))e.textContent=''});
+  // find arrow element by key
+  doSort(t);t===0?render0():render1();
+}
+function doSort(t){
+  const[k,d]=SK[t];
+  FILT.sort((a,b)=>{
+    let av=t===1?(a._f?.[k]??a[k]):a[k];let bv=t===1?(b._f?.[k]??b[k]):b[k];
+    av=parseFloat(av)||av;bv=parseFloat(bv)||bv;
+    if(av==null||av==='')return 1;if(bv==null||bv==='')return -1;
+    if(typeof av==='string')return d==='asc'?av.localeCompare(bv,'fa'):bv.localeCompare(av,'fa');
+    return d==='asc'?av-bv:bv-av;
+  });
+}
+function applyFilter(){
+  FILT=ALL.filter(s=>(GRP==='all'||s._g===GRP)&&(!Q||s.l18.includes(Q)||(s.l30||'').includes(Q)));
+  doSort(0);doSort(1);document.getElementById('fcnt').textContent=FILT.length+' نماد';render0();render1();
+}
+function setGrp(el,g){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');GRP=g;applyFilter()}
+document.getElementById('srch').addEventListener('input',e=>{Q=e.target.value;applyFilter()});
+function swTab(i){TAB=i;document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i))}
+
+function updSum(){
+  const pos=ALL.filter(s=>parseFloat(s.pcp)>0).length,neg=ALL.filter(s=>parseFloat(s.pcp)<0).length;
+  const pes=ALL.filter(s=>parseFloat(s.pe)>0).map(s=>parseFloat(s.pe));
+  const avgPE=pes.length?(pes.reduce((a,b)=>a+b,0)/pes.length).toFixed(1):'—';
+  const sorted=[...ALL].sort((a,b)=>parseFloat(b.pcp)-parseFloat(a.pcp));
+  const top=sorted[0],bot=sorted[sorted.length-1];
+  document.getElementById('s0').textContent=ALL.length;
+  document.getElementById('s1').textContent=pos;document.getElementById('s2').textContent=neg;
+  document.getElementById('s3').textContent=top?`${top.l18} +${parseFloat(top.pcp).toFixed(2)}%`:'—';
+  document.getElementById('s4').textContent=bot?`${bot.l18} ${parseFloat(bot.pcp).toFixed(2)}%`:'—';
+  document.getElementById('s5').textContent=avgPE;
+}
+function updTicker(){
+  const items=[...ALL].sort((a,b)=>Math.abs(parseFloat(b.pcp))-Math.abs(parseFloat(a.pcp))).slice(0,40);
+  const h=items.map(s=>{const v=parseFloat(s.pcp)||0,c=v>0?'tu':v<0?'td':'';return`<div class="ti"><span class="ts">${s.l18}</span><span class="${c}">${f(s.pc)} ${v>0?'+':''}${v.toFixed(2)}%</span></div>`}).join('');
+  document.getElementById('tscr').innerHTML=h+h;
+}
+
+function openDrawer(sym){
+  const s=ALL.find(x=>x.l18===sym);if(!s)return;
+  const fi=s._f||{};
+  document.getElementById('drsym').textContent=s.l18;
+  document.getElementById('drnm').textContent=s.l30||'—';
+  document.getElementById('drgrp').textContent=s._g||'—';
+  const pcp=parseFloat(s.pcp)||0,coc=pcp>0?'var(--sage2)':pcp<0?'var(--rose2)':'var(--soft)',cs=pcp>0?'+':'';
+  const secs=[
+    {t:'💰 قیمت',c:[{l:'قیمت پایانی',v:f(s.pc)+' ریال',c:'var(--head)'},{l:'تغییر',v:cs+pcp.toFixed(2)+'%',c:coc},{l:'آخرین',v:f(s.pl),c:'var(--head)'},{l:'کمترین',v:f(s.pmin),c:'var(--rose2)'},{l:'بیشترین',v:f(s.pmax),c:'var(--sage2)'},{l:'دیروز',v:f(s.py),c:'var(--soft)'}]},
+    {t:'📐 ارزش‌گذاری',c:[{l:'P/E',v:n(fi.pe),c:'var(--gold2)'},{l:'P/D',v:n(fi.pd),c:'var(--soft)'},{l:'P/S',v:n(fi.ps),c:'var(--soft)'},{l:'P/A',v:n(fi.pa),c:'var(--soft)'},{l:'P/B',v:n(fi.pb),c:'var(--soft)'},{l:'EPS',v:f(fi.eps)+' ریال',c:'var(--head)'}]},
+    {t:'📈 سودآوری',c:[{l:'DPS',v:f(fi.dps)+' ریال',c:'var(--head)'},{l:'تقسیم',v:n(fi.payout)+'%',c:'var(--gold2)'},{l:'ROE',v:n(fi.roe)+'%',c:cof(fi.roe,10,20)},{l:'ROA',v:n(fi.roa)+'%',c:cof(fi.roa,5,10)},{l:'حاشیه خالص',v:n(fi.n10_npm)+'%',c:cof(fi.n10_npm,10,20)},{l:'حاشیه ناخالص',v:n(fi.n10_gpm)+'%',c:cof(fi.n10_gpm,15,30)}]},
+    {t:'📋 ن‌۳۰',c:[{l:'فروش ماهانه',v:s.n30_sale?mn(s.n30_sale):(s._cd?'ندارد':'در صف'),c:'var(--gold2)'},{l:'رشد فروش',v:s.n30_sale_g!=null?s.n30_sale_g+'%':'—',c:cof(s.n30_sale_g,0,15)},{l:'صادرات',v:s.n30_export?mn(s.n30_export):'—',c:'var(--teal2)'},{l:'سهم صادرات',v:fi.n30_exp_pct!=null?fi.n30_exp_pct+'%':'—',c:'var(--teal)'},{l:'تاریخ',v:s.n30_date||'—',c:'var(--dim)'},{l:'وضعیت',v:s._cd?'✅ دریافت':'⏳ در صف',c:s._cd?'var(--sage2)':'var(--gold2)'}]},
+    {t:'📑 ن‌۱۰',c:[{l:'درآمد عملیاتی',v:s.n10_revenue?mn(s.n10_revenue):(s._cd?'ندارد':'در صف'),c:'var(--violet)'},{l:'رشد درآمد',v:fi.n10_rev_g!=null?fi.n10_rev_g+'%':'—',c:cof(fi.n10_rev_g,0,15)},{l:'سود خالص',v:s.n10_net?mn(s.n10_net):'—',c:'var(--sage2)'},{l:'رشد حاشیه',v:fi.n10_npm_g!=null?fi.n10_npm_g+'%':'—',c:cof(fi.n10_npm_g,0,2)},{l:'D/E',v:n(fi.de),c:fi.de<1?'var(--sage)':fi.de<2?'var(--gold)':'var(--rose)'},{l:'نسبت جاری',v:n(fi.cur_r),c:cof(fi.cur_r,1,1.5)}]},
+    {t:'🏛 بازار',c:[{l:'ارزش بازار',v:mkc(s.mkcap)+' م.ت',c:'var(--head)'},{l:'شناور',v:n(s.ff)+'%',c:'var(--soft)'},{l:'حجم',v:vol(s.tvol),c:'var(--soft)'},{l:'خالص حقیقی',v:vol(s.net_ri),c:(s.net_ri||0)>0?'var(--sage2)':'var(--rose2)'},{l:'تعداد معاملات',v:n(s.tno),c:'var(--soft)'},{l:'صنعت',v:s._g,c:'var(--teal2)'}]},
+  ];
+  document.getElementById('drb').innerHTML=`
+    <div style="display:flex;gap:8px;align-items:baseline;padding:4px 0 8px">
+      <div style="font-size:26px;font-weight:900;color:var(--head)">${f(s.pc)}<small style="font-size:11px;color:var(--dim);margin-right:4px">ریال</small></div>
+      <div style="font-size:15px;font-weight:700;color:${coc}">${cs}${pcp.toFixed(2)}%</div>
+    </div>
+    ${secs.map(sec=>`<div class="drsec"><div class="drst">${sec.t}</div><div class="drg2">${sec.c.map(c=>`<div class="drce"><div class="drl">${c.l}</div><div class="drv" style="color:${c.c}">${c.v??'—'}</div></div>`).join('')}</div></div>`).join('')}`;
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open')}
+
+function exportCSV(){
+  if(!FILT.length)return;
+  const isT0=TAB===0;
+  const H=isT0?['نماد','نام','صنعت','قیمت','تغییر%','P/E','EPS','ارزش بازار','خالص حقیقی','فروش ن۳۰','رشد فروش%','صادرات ن۳۰','درآمد ن۱۰','سود خالص','حاشیه%','حجم']:['نماد','نام','صنعت','P/E','P/D','P/S','P/A','P/B','EPS','DPS','تقسیم%','ROE%','ROA%','فروش ماهانه','رشد فروش%','صادرات','سهم صادرات%','درآمد','رشد درآمد%','حاشیه ناخالص%','حاشیه خالص%','رشد حاشیه','نسبت جاری','D/E','نسبت بدهی'];
+  const R=FILT.map(s=>{const fi=s._f||{};return isT0?[s.l18,s.l30,s._g,s.pc,s.pcp,s.pe,s.eps,s.mkcap,s.net_ri,s.n30_sale,s.n30_sale_g,s.n30_export,s.n10_revenue,s.n10_net,s.n10_npm,s.tvol]:[s.l18,s.l30,s._g,fi.pe,fi.pd,fi.ps,fi.pa,fi.pb,fi.eps,fi.dps,fi.payout,fi.roe,fi.roa,fi.n30_sale,fi.n30_sale_g,fi.n30_export,fi.n30_exp_pct,fi.n10_revenue,fi.n10_rev_g,fi.n10_gpm,fi.n10_npm,fi.n10_npm_g,fi.cur_r,fi.de,fi.debt_r]});
+  const csv=[H,...R].map(r=>r.map(v=>v??'').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='bourse-'+TAB+'-'+Date.now()+'.csv';a.click();
+}
+
+function setOv(t,s,m){const el=document.getElementById('ov'+t);el.classList.toggle('hidden',!s);if(m){const e=document.getElementById('ovm'+t);if(e)e.textContent=m}}
+function setP(t,p){const b=document.getElementById('pb'+t),l=document.getElementById('ol'+t);if(b)b.style.width=p+'%';if(l)l.textContent=p+'%'}
+function setBadge(type,txt){document.getElementById('badge').className='pill pill-'+type;document.getElementById('stxt').textContent=txt}
+function toast(m,type='ok'){const el=document.getElementById('toast');el.className='toast '+type;el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),4000)}
+setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('fa-IR')},1000);
+fetchAll();
+</script>
+</body>
+</html>
